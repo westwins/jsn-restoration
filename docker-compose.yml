@@ -1,0 +1,37 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - db
+    environment:
+      SYMFONY__DATABASE__HOST: db
+      SYMFONY__DATABASE__PORT: 3306
+      SYMFONY__DATABASE__NAME: symfony
+      SYMFONY__DATABASE__USER: root
+      SYMFONY__DATABASE__PASSWORD: ${JSN_DB_PASSWORD:?Set JSN_DB_PASSWORD in .env}
+      GOOGLE_MAPS_BROWSER_KEY: ${GOOGLE_MAPS_BROWSER_KEY:?Set GOOGLE_MAPS_BROWSER_KEY in .env}
+      GOOGLE_MAPS_SERVER_KEY: ${GOOGLE_MAPS_SERVER_KEY:?Set GOOGLE_MAPS_SERVER_KEY in .env}
+
+  db:
+    image: mariadb:10.5
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${JSN_DB_PASSWORD:?Set JSN_DB_PASSWORD in .env}
+      MYSQL_DATABASE: symfony
+    volumes:
+      - db_data:/var/lib/mysql
+
+  node:
+    image: node:14
+    working_dir: /app
+    volumes:
+      - ./:/app
+    command: sh -c "npm install --legacy-peer-deps && npm run build"
+
+volumes:
+  db_data:

@@ -40,6 +40,7 @@ twig:
     strict_variables: "%kernel.debug%"
     globals:
         site_title: "%site_title%"
+        maps_browser_key: "%env(GOOGLE_MAPS_BROWSER_KEY)%"
 
 # Assetic Configuration
 assetic:

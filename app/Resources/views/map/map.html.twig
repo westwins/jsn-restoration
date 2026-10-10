@@ -188,9 +188,12 @@
             map.addListener('center_changed', debounce(updateUrl, 250));
             map.addListener('zoom_changed', debounce(updateUrl, 250));
 
-            heatmap = new google.maps.visualization.HeatmapLayer({
-                radius: 75
-            });
+            // The legacy heatmap is disabled; retain its interface for marker updates.
+            heatmap = {
+                setMap: function(){},
+                getMap: function(){ return null; },
+                setData: function(){}
+            };
 
             mc = new MarkerClusterer(map, [], {
                 maxZoom: 7,

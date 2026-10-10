@@ -1,6 +1,8 @@
 Jesuit Science Network
 ======================
 
+For the 2026 Docker restoration, deployment differences, and provenance, see [RESTORATION.md](RESTORATION.md). The restoration keeps the original project's authorship and Git history.
+
 This is the source code of the JSN application that was developed during Dagmar Mrozik's PhD thesis "The Jesuit Science Network: A digital prosopography on Jesuit scholars in the early modern sciences" and was available online from 2018 through 2020 on jesuitscience.net (domain has been grabbed after expiring and is not in our control any more).
 
 The thesis itself can be found online [here](http://elpub.bib.uni-wuppertal.de/servlets/DocumentServlet?id=8981). It contains further information about the projects, its goals and its features.

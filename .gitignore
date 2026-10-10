@@ -27,3 +27,7 @@ logs
 node_modules
 /html/build/*
 !/html/build/.gitkeep
+/GoogleMapApi
+/.env
+/.env.*
+!/.env.example

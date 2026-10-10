@@ -1,6 +1,12 @@
 {
+  "scripts": {
+    "dev": "encore dev",
+    "watch": "encore dev --watch",
+    "build": "encore production"
+  },
   "devDependencies": {
     "@symfony/webpack-encore": "^0.14.0",
+    "less": "^3.13.1",
     "less-loader": "^4.0.5"
   },
   "dependencies": {

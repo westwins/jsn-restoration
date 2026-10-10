@@ -69,7 +69,7 @@ class Geocoder
         }
 
         $json = $this->cache->getOrCreate(
-            md5($placeName) . '.json',
+            md5($placeName) . '_new.json',
             [],
             function ($filename) use ($placeName) {
                 $json = $this->fetch($placeName);
@@ -80,7 +80,7 @@ class Geocoder
         $data = json_decode($json, true);
 
         if ($data['status'] !== 'OK') {
-            throw new \RuntimeException('Could not geocode: '.$placeName);
+            return new Location(0, 0, null, null);
         }
 
         $loc = $data['results'][0]['geometry']['location'];
@@ -119,7 +119,7 @@ class Geocoder
 
         $options = [
             'language' => 'en',
-            'key' => Constants::MAPS_API_KEY,
+            'key' => Constants::mapsApiKey(),
             'address' => $placeName
         ];
 

@@ -4,5 +4,13 @@ namespace AppBundle;
 
 class Constants
 {
-    const MAPS_API_KEY = 'AIzaSyBAj3xGeT4xh_SJyqeiPJqMKHY0UnQV2Eg';
+    public static function mapsApiKey()
+    {
+        $key = getenv('GOOGLE_MAPS_SERVER_KEY');
+        if (!$key) {
+            throw new \RuntimeException('GOOGLE_MAPS_SERVER_KEY must be configured for geocoding');
+        }
+
+        return $key;
+    }
 }

@@ -8,7 +8,7 @@ class RemoteProvider implements RdfProviderInterface
 {
     public function getRdf($viaf)
     {
-        $url = 'http://viaf.org/viaf/'.$viaf.'/rdf.xml';
+        $url = 'https://viaf.org/viaf/'.$viaf.'/rdf.xml';
 
         $ch = curl_init($url);
         curl_setopt_array($ch, [
