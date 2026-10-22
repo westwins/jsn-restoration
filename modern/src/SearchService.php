@@ -302,17 +302,11 @@ EOSQL;
             ->em
             ->getRepository('App\Entity\Person')
             ->createQueryBuilder('p')
-            ->select('p.id')
+            ->select('DISTINCT p.id')
+            ->innerJoin('p.subjects', 'si')
+            ->where('si.id IN (:ids)')
+            ->setParameter('ids', array_map('intval', $ids))
         ;
-
-        foreach ($ids as $id) {
-            $pqb->innerJoin(
-                'p.subjects',
-                'si'.$id,
-                Query\Expr\Join::WITH,
-                "si$id.id=$id"
-            );
-        }
 
         $pids = $pqb->getQuery()->getResult(Query::HYDRATE_ARRAY);
         $pids = array_map(function ($e) {
