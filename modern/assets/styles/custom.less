@@ -16,7 +16,7 @@
 }
 
 body {
-  padding-top: 50px;
+  padding-top: 70px;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -928,15 +928,22 @@ a.geo {
   color: #fff;
 }
 .beco {
-  .list-inline;
-  .list-unstyled;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 3px;
+  padding-left: 0;
+  list-style: none;
 
   li {
+    display: block;
+    flex: 0 0 20px;
+    width: 20px;
     margin: 0;
     padding: 0;
   }
   li:last-child {
-    margin-right: -3px;
+    margin-right: 0;
   }
 
   a {

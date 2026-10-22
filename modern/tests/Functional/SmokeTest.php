@@ -20,6 +20,22 @@ final class SmokeTest extends WebTestCase
         self::assertResponseIsSuccessful();
     }
 
+    public function testParisRadiusSearchReturnsResults(): void
+    {
+        $client = self::createClient();
+        $crawler = $client->request(
+            'GET',
+            '/search/?radius=100&lat=48.857547499999995&lng=2.3513764999999998&placeName=Paris%2C+France'
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertMatchesRegularExpression(
+            '/^[1-9][0-9]* Results$/i',
+            trim($crawler->filter('.search-results h3')->text())
+        );
+        self::assertSelectorExists('.search-results tbody tr');
+    }
+
     public static function pageProvider(): iterable
     {
         yield 'home' => ['/'];

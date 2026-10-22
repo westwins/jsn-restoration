@@ -102,22 +102,16 @@ HAVING
 ORDER BY
     distance ASC
 EOSQL;
-        $rows = $this->em->getConnection()->executeQuery(
+        $ids = $this->em->getConnection()->executeQuery(
             $distanceSql,
             [
                 'lat' => $radius->getCenter()->getLatitude(),
                 'lng' => $radius->getCenter()->getLongitude(),
                 'radius' => $radius->getRadius()
             ]
-        );
+        )->fetchFirstColumn();
 
-        $ids = [];
-
-        foreach ($rows as $row) {
-            $ids[] = $row['id'];
-        }
-
-        return $ids;
+        return array_map('intval', $ids);
     }
 
     public function getSubjectGroupTree($whitelist = null)
