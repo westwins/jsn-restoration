@@ -1,0 +1,68 @@
+{% extends "layout.html.twig" %}
+
+{% block bodyAttributes %}{% if scheme is not defined %} data-bs-spy="scroll" data-bs-target="#letter-list"{% endif %}{% endblock %}
+
+{% block stylesheets %}
+    {% if scheme is not defined %}
+    <style type="text/css">
+        .jumptarget:before {
+            height:170px; /* fixed header height*/
+            margin:-170px 0 0; /* negative fixed header height */
+        }
+    </style>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="container container-narrow alph-list{% if scheme is not defined %} fixed{% endif %}">
+        <div class="col-12">
+            <header>
+                <ul class="pull-right nav nav-pills nav-pills-small group-nav">
+                    <li{% if scheme is not defined %} class="active"{% endif %}><a href="{{ path('subjects') }}">alphabetical</a></li>
+                    <li{% if scheme is defined %} class="active"{% endif %}><a href="{{ path('subjects_grouped') }}">grouped</a></li>
+                </ul>
+                <h2>
+                    {% if groupCount is defined and groupCount %}
+                        <span class="text-muted">{{ groupCount }}</span> groups
+                    {% else %}
+                        <span class="text-muted">{{ fullCount }}</span> subjects
+                    {% endif %}
+                </h2>
+                {% if scheme is not defined %}
+                <div id="letter-list">
+                <ul class="nav nav-pills letter-list">
+                    {% for letter in range('A', 'Z') %}
+                        {% if letters[letter] is defined %}
+                            <li><a href="#{{ letter }}">{{ letter }}</a></li>
+                        {% else %}
+                            <li class="disabled" role="presentation"><a>{{ letter }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+                </div>
+                {% endif %}
+            </header>
+            {% if groupCount is defined %}
+            <p class="total-count"><em>{{ fullCount }} subjects total</em></p>
+            {% endif %}
+            <div>
+                {% for letter, entries in letters %}
+                    <h4 class="jumptarget" id="{{ letter }}">{{ letter }}</h4>
+                    <ul class="list-unstyled">
+                        <li class="entry">
+                            Subject <small class="text-muted"><em>mentions</em> &bull; <em>associated persons</em></small>
+                        </li>
+                        <li class="list-separator"></li>
+                        {% for entry in entries %}
+                            <li class="entry">
+                                <a href="{{ path('search', {subjects:entry.subject.id}) }}">{{ entry.subject.title }}</a>
+                                <small class="text-muted">{{ entry.aspectCount }} &bull; {{ entry.personCount }}</small>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

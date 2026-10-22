@@ -1,0 +1,39 @@
+{% extends "layout.html.twig" %}
+{% import "macros.html.twig" as macro %}
+
+{% set enableMap = true %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-9 col-sm-push-3 search-results" style="border-left: 1px solid #ddd;">
+                <a href="{{ path('search') }}" style="margin-top: 15px;" class="pull-right btn btn-xs btn-default" title="Discard search and start over">New search</a>
+
+                <h3>{{ pagination.getTotalItemCount }} Results</h3>
+
+                {{ include('search/includes/summary.html.twig') }}
+
+                <div class="text-center">
+                    {{ knp_pagination_render(pagination) }}
+                </div>
+
+                {{ include('search/includes/list.html.twig') }}
+
+                <div class="text-center">
+                    {{ knp_pagination_render(pagination) }}
+                </div>
+            </div>
+
+            <div class="col-sm-3 col-sm-pull-9 text-right search-refine">
+                <h3>Refine</h3>
+
+                {{ include('search/includes/refine.html.twig') }}
+            </div>
+
+        </div>
+
+    </div>
+
+    {{ include('search/includes/modals.html.twig') }}
+
+{% endblock %}

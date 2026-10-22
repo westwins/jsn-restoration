@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+# See also https://symfony.com/doc/current/service_container/import.html
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+    site_title: 'Jesuit Science Network'
+    site_base_url: '%env(SITE_BASE_URL)%'
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DTO/'
+            - '../src/Entity/'
+            - '../src/EntityRepository/'
+            - '../src/Exception/'
+            - '../src/Form/'
+            - '../src/Kernel.php'
+            - '../src/ORM/'
+
+    App\SearchService:
+        arguments:
+            $paginator: '@knp_paginator'
+
+    JMS\Serializer\SerializerInterface: '@jms_serializer'
+
+    App\Pdr\IdiProvider\CachingProvider:
+        arguments:
+            $originalProvider: '@App\Pdr\IdiProvider\RemoteProvider'
+            $cache: '@cache.import.pdr'
+
+    App\Pdr\IdiProviderInterface: '@App\Pdr\IdiProvider\CachingProvider'
+
+    App\Viaf\RdfProvider\CachingProvider:
+        arguments:
+            $originalProvider: '@App\Viaf\RdfProvider\RemoteProvider'
+            $cache: '@cache.import.viaf'
+
+    App\Viaf\RdfProviderInterface: '@App\Viaf\RdfProvider\CachingProvider'
+
+    App\Geocoder:
+        arguments:
+            $cache: '@cache.import.geocoder'
+            $mapsServerKey: '%env(GOOGLE_MAPS_SERVER_KEY)%'
+
+    App\Command\ImportDataCommand:
+        arguments:
+            $groupFile: '%kernel.project_dir%/config/yaml/subject_groups.yml'
+            $mathNatFile: '%kernel.project_dir%/config/yaml/mathnat.yml'
+
+    App\Controller\BeaconController:
+        arguments:
+            $siteBaseUrl: '%site_base_url%'
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones

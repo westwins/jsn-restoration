@@ -1,0 +1,43 @@
+// Minimal Bootstrap 3 mixins retained only while the historical JSN theme is
+// expressed in Less. Component behavior and base styles come from Bootstrap 5.
+.text-right() { text-align: right; }
+.box-shadow(@shadow) { box-shadow: @shadow; }
+.border-left-radius(@radius) {
+  border-bottom-left-radius: @radius;
+  border-top-left-radius: @radius;
+}
+.border-right-radius(@radius) {
+  border-bottom-right-radius: @radius;
+  border-top-right-radius: @radius;
+}
+.input-size(@height; @padding-vertical; @padding-horizontal; @font-size; @line-height; @border-radius) {
+  height: @height;
+  padding: @padding-vertical @padding-horizontal;
+  font-size: @font-size;
+  line-height: @line-height;
+  border-radius: @border-radius;
+}
+.label() {
+  display: inline;
+  padding: .2em .6em .3em;
+  font-size: 75%;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+.label-info() { background-color: @brand-info; }
+.list-unstyled() { padding-left: 0; list-style: none; }
+.list-inline() {
+  padding-left: 0;
+  margin-left: -5px;
+  list-style: none;
+}
+
+#gradient {
+  .vertical-three-colors(@start-color; @mid-color; @color-stop; @end-color) {
+    background-image: linear-gradient(to bottom, @start-color 0, @mid-color @color-stop, @end-color 100%);
+  }
+}

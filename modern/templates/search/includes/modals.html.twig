@@ -1,0 +1,145 @@
+{% embed "modal.html.twig" with {id: "modal-date", class: "", title: "Refine by Date Range", footer: true} %}
+    {% block body %}
+        <div class="row form-group">
+            <table class="time-slider">
+                <tr>
+                    <td class="input text-right">
+                        <input type="text" name="from" id="when-from" value="{{ query.from|default(1490) }}" class="form-control"/>
+                    </td>
+                    <td>
+                        <div
+                                class="when-slider"
+                                data-slider-min="1490"
+                                data-slider-max="1870"
+                                data-slider-step="1"
+                                data-slider-value="[{{ query.from|default(1490) }},{{ query.to|default(1870) }}]"
+                        ></div>
+                    </td>
+                    <td class="input">
+                        <input type="text" name="to" id="when-to" value="{{ query.to|default(1870) }}" class="form-control"/>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    {% endblock %}
+    {% block buttons %}
+    <button type="button" class="btn btn-primary js-apply-daterange" data-url="{{ path('search') }}" data-params="{{ params|json_encode }}">Apply</button>
+    {% endblock %}
+{% endembed %}
+
+
+{% if filter.sources is defined and (filter.sources.sources|length > 0 or filter.sources.groups|length > 0) %}
+    {% embed "modal.html.twig" with {id: "modal-sources", class: "refinement", title: "Refine by Source", footer: true} %}
+        {% block extra_modal_attributes %}
+            style="padding:0;"
+        {% endblock %}
+
+        {% block body %}
+            <form action="{{ path('search') }}" method="get">
+                {% for key, param in params %}
+                    {% if key != "sources" %}
+                    <input type="hidden" name="{{ key }}" value="{{ param }}">
+                    {% endif %}
+                {% endfor %}
+            <input type="hidden" class="collector" value="{{ params.sources|default('') }}" name="sources" />
+            <table class="table table-modal table-hover table-condensed click-to-select">
+                <tbody>
+                {% for g in filter.sources.groups %}
+                    <tr>
+                        <td>
+                            {#<a href="" class="btn btn-default btn-xs"><i class="fa fa-plus"></i> Add</a>#}
+                            <input type="checkbox" value="{{ g.slug }}">
+                        </td>
+                        <td>
+                            <i class="fa fa-list" title="This entry refers to multiple sources from the same series."></i> {{ g.fullCite }}
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% for s in filter.sources.sources %}
+                <tr>
+                    <td>
+                        {#<a href="" class="btn btn-default btn-xs"><i class="fa fa-plus"></i> Add</a>#}
+                        <input type="checkbox" value="{{ s.id }}">
+                    </td>
+                    <td>
+                        {% include "include/shortsource.html.twig" with {source: s} only %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </form>
+        {% endblock %}
+        {% block buttons %}
+            <small class="pull-left text-muted" style="line-height: 34px;">Select one or more sources you want to show aspects of.</small>
+            <button id="apply-sources" class="btn btn-primary">Apply</button>
+        {% endblock %}
+    {% endembed %}
+{% endif %}
+
+    {% if filter.places|length > 7 %}
+        {% embed "modal.html.twig" with {id: "modal-places", class: "refinement", title: "Refine by Place"} %}
+            {% block body %}
+                {% set cur = false %}
+                {% for p in filter.places %}
+                    {% if cur is not same as(p.country) %}
+                        {% if cur is not same as(false) %}</ul>{% endif %}
+                        <h6>{{ p.country|format_country }}</h6>
+                        <ul class="list-unstyled list-indented">
+                        {% set cur = p.country %}
+                    {% endif %}
+                    <li><a href="{{ path('search', params|merge({place:p.slug})) }}">
+                            {{ p.placeName }}
+                        </a></li>
+                {% endfor %}
+                </ul>
+            {% endblock %}
+        {% endembed %}
+    {% endif %}
+
+    {% if filter.countries|length > 7 %}
+        {% embed "modal.html.twig" with {id: "modal-countries", class: "refinement", title: "Refine by Country"} %}
+            {% block body %}
+                <ul class="list-unstyled">
+                    {% for c, label in filter.countries %}
+                        <li><a href="{{ path('search', params|merge({country: c})) }}">{{ label }}</a></li>
+                    {% endfor %}
+                </ul>
+            {% endblock %}
+        {% endembed %}
+    {% endif %}
+
+    {% if filter.occupations|length > 7 %}
+        {% embed "modal.html.twig" with {id: "modal-occupations", class: "refinement", title: "Refine by Occupation"} %}
+            {% block body %}
+                <ul class="list-unstyled">
+                    {% for slug, label in filter.occupations %}
+                        <li><a href="{{ path('search', params|merge({occupation:slug})) }}">{{ label }}</a></li>
+                    {% endfor %}
+                </ul>
+            {% endblock %}
+        {% endembed %}
+    {% endif %}
+
+    {% if filter.subjects is defined %}
+        {% embed "modal.html.twig" with {id: "modal-subjects", class: "wide refinement", title: "Refine by Subject"} %}
+            {% block body %}
+            <ul class="list-unstyled list-indented">
+                {% for node in filter.subjects %}
+                    <li>
+                        {% if node.nodes|length %}
+                            <em>{{ node.text }}</em>
+                            <ul class="list-unstyled list-indented">
+                                {% for childNode in node.nodes %}
+                                    <li><a href="{{ path('search', params|str_add('subjects', childNode.id)) }}">{{ childNode.text }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            {{ node.text }}
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+            {% endblock %}
+        {% endembed %}
+    {% endif %}

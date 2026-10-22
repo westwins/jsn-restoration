@@ -1,0 +1,209 @@
+{% import "macros.html.twig" as macro %}
+
+<h6>Date</h6>
+<ul class="list-unstyled">
+    <li class="date-refine">
+        <a href="#" data-bs-toggle="modal" data-bs-target="#modal-date">{{ query.from|default(1490) }} – {{ query.to|default(1870) }}</a>
+    </li>
+</ul>
+
+<h6>Types</h6>
+<ul class="beco">
+    {% set types = ['biographical', 'education', 'career', 'miscellaneous'] %}
+    {% for type in types %}
+    <li>
+        <a {% if attribute(query, type) %}class="checked"{% endif %}
+           href="{% if attribute(query, type) %}{{ path('search', params|bit_remove('types', constant('App\\Query::TYPE_' ~(type|upper)))) }}{% else %}{{ path('search', params|bit_add('types', constant('App\\Query::TYPE_' ~(type|upper)))) }}{% endif %}"
+           data-bs-toggle="tooltip"
+           data-bs-placement="bottom"
+           title="{{ type|capitalize }}">{{ type|first|capitalize }}</a>
+    </li>
+    {% endfor %}
+ </ul>
+
+<h6>Only Include</h6>
+<ul class="list-unstyled">
+    {% if query.jesuit is not null %}
+    <li class="restriction">
+        {% if query.jesuit %}Jesuits{% else %}Non-Jesuits{% endif %}
+        {{ macro.remove_restriction(params|unset('jesuit')) }}
+    </li>
+    {% endif %}
+    {% if query.ems is not null %}
+        <li class="restriction">
+            {% if query.ems %}EMS-related{% else %}EMS-unrelated{% endif %}
+            {{ macro.remove_restriction(params|unset('ems')) }}
+        </li>
+    {% endif %}
+    {% if query.ems is null or query.ems is same as(false) %}
+    <li>
+        <a href="{{ path('search', params|merge({ems: 1})) }}">EMS-related</a>
+        <i class="fa fa-info-circle js-popover text-muted"
+           data-bs-toggle="popover"
+           data-bs-trigger="hover"
+           data-container=".search-refine"
+           data-bs-placement="right"
+           data-bs-content="Only show aspects of persons associated with subjects from the early modern sciences"></i>
+    </li>
+    {% endif %}
+    {% if query.ems is null or query.ems is same as(true) %}
+    <li>
+        <a href="{{ path('search', params|merge({ems: 0})) }}">EMS-unrelated</a>
+        <i class="fa fa-info-circle js-popover-html text-muted"
+           data-bs-toggle="popover"
+           data-bs-trigger="hover"
+           data-container=".search-refine"
+           data-bs-placement="right"
+           data-bs-content="Only show aspects of persons <em>not</em> associated with subjects from the early modern sciences"></i>
+    </li>
+    {% endif %}
+    {% if query.jesuit is null or query.jesuit is same as(false) %}
+    <li>
+        <a href="{{ path('search', params|merge({jesuit: 1})) }}">Jesuits</a>
+    </li>
+    {% endif %}
+    {% if query.jesuit is null or query.jesuit is same as(true) %}
+    <li>
+        <a href="{{ path('search', params|merge({jesuit: 0})) }}">Non-Jesuits</a>
+    </li>
+    {% endif %}
+</ul>
+
+<h6>Subject</h6>
+<ul class="list-unstyled">
+    {% for id, subject in query.subjects %}
+        <li class="restriction">
+            {{ subject }}
+            {{ macro.remove_restriction(params|str_remove('subjects', id)) }}
+        </li>
+    {% endfor %}
+
+    {% if filter.subjects_short|length > 0 %}
+        {% for subj in filter.subjects_short %}
+            <li><a href="{{ path('search', params|str_add('subjects', subj.id)) }}">{{ subj.title }}</a></li>
+        {% endfor %}
+        {% if filter.subjects_count is defined and filter.subjects_count > 7 %}
+            <li><a href="#" data-bs-toggle="modal" data-bs-target="#modal-subjects">
+                    <em>{{ filter.subjects_count - 7 }} more...</em>
+                </a></li>
+        {% endif %}
+    {% else %}
+        <li><em class="text-muted">Not applicable</em></li>
+    {% endif %}
+</ul>
+
+<h6>Occupation <i class="fa fa-info-circle js-popover-html text-muted"
+                  data-bs-toggle="popover"
+                  data-bs-trigger="hover"
+                  data-container=".search-refine"
+                  data-bs-placement="right"
+                  data-bs-content="..."></i>
+</h6>
+<ul class="list-unstyled">
+    {% if query.occupation %}
+        <li class="restriction">
+            {{ filter.occupations|first }}
+            {{ macro.remove_restriction(params|unset('occupation')) }}
+        </li>
+    {% elseif filter.occupations|length > 0 %}
+        {% for slug, label in filter.occupations|slice(0,7) %}
+            <li><a href="{{ path('search', params|merge({occupation: slug})) }}">{{ label }}</a></li>
+        {% endfor %}
+        {% if filter.occupations|length > 7 %}
+            <li><a href="#" data-bs-toggle="modal" data-bs-target="#modal-occupations">
+                <em>{{ filter.occupations|length - 7 }} more...</em>
+            </a></li>
+        {% endif %}
+    {% else %}
+        <li><em class="text-muted">Not applicable</em></li>
+    {% endif %}
+</ul>
+
+<h6>Source</h6>
+    <ul class="list-unstyled">
+        {% if query.sources|length > 0 %}
+        <li class="restriction">
+            {{ query.sources|length }} selected
+            {{ macro.remove_restriction(params|unset('sources')) }}
+        </li>
+        <li><a href="#" data-bs-toggle="modal" data-bs-target="#modal-sources">
+                <em>change selection</em>
+            </a></li>
+        {% elseif filter.sources is defined and (filter.sources.sources|length > 0 or filter.sources.groups|length > 0) %}
+            <li><a href="#" data-bs-toggle="modal" data-bs-target="#modal-sources">
+                    <em>View list ({{ filter.sources.sources|length + filter.sources.groups|length }})</em>
+            </a></li>
+        {% else %}
+            <li><em class="text-muted">Not applicable</em></li>
+        {% endif %}
+    </ul>
+
+<h6>Place</h6>
+<ul class="list-unstyled">
+    {% if query.radius %}
+        <li class="restriction">
+            within {{ query.radius.radius }}&nbsp;km of<br>{{ query.radius.center.description }}
+            {{ macro.remove_restriction(params|unset(['radius', 'placeName', 'lat', 'lng'])) }}
+        </li>
+    {% endif %}
+    {% if query.bounds %}
+        <li class="restriction">
+            within specified<br><abbr class="js-popover" title="Coordinates" data-bs-toggle="popover" data-bs-placement="right" data-bs-html="true" data-bs-trigger="click" data-bs-content="Southwest corner<br>{{ query.bounds.southWest.latitude }}, {{ query.bounds.southWest.longitude }}<br>Northeast corner<br>{{ query.bounds.northEast.latitude }}, {{ query.bounds.northEast.longitude }}">map area</abbr>
+            {{ macro.remove_restriction(params|unset('bounds')) }}
+        </li>
+    {% endif %}
+
+    {% if query.place %}
+        <li class="restriction">
+            {{ query.place.placeName }}, {{ query.place.country|format_country }}
+            {{ macro.remove_restriction(params|unset('place')) }}
+        </li>
+    {% elseif filter.places|length > 0 %}
+        {% for p in filter.places|slice(0,7) %}
+            <li><a href="{{ path('search', params|merge({place: p.slug})) }}">{{ p.placeName }}</a></li>
+        {% endfor %}
+        {% if filter.places|length > 7 %}
+            <li><a href="#" data-bs-toggle="modal" data-bs-target="#modal-places">
+                    <em>{{ filter.places|length - 7 }} more...</em>
+                </a></li>
+        {% endif %}
+    {% else %}
+        <li><em class="text-muted">Not applicable</em></li>
+    {% endif %}
+</ul>
+
+<h6>Country</h6>
+<ul class="list-unstyled">
+    {% if query.country %}
+        <li class="restriction">
+            <em>{{ query.country|format_country }}</em>
+            {{ macro.remove_restriction(params|unset('country')) }}
+        </li>
+    {% elseif filter.countries|length > 0 %}
+        {% for c, label in filter.countries_short %}
+            <li><a href="{{ path('search', params|merge({country: c})) }}">{{ label }}</a></li>
+        {% endfor %}
+        {% if filter.countries|length > 7 %}
+            <li><a href="#" data-bs-toggle="modal" data-bs-target="#modal-countries">
+                    <em>{{ filter.countries|length - 7 }} more...</em>
+                </a></li>
+        {% endif %}
+    {% else %}
+        <li><em class="text-muted">Not applicable</em></li>
+    {% endif %}
+</ul>
+<h6>Continent</h6>
+<ul class="list-unstyled">
+    {% if query.continent %}
+        <li class="restriction">
+            <em>{{ query.continent|format_continent }}</em>
+            {{ macro.remove_restriction(params|unset('continent')) }}
+        </li>
+    {% elseif filter.continents|length > 0 %}
+        {% for c, label in filter.continents %}
+            <li><a href="{{ path('search', params|merge({continent: c})) }}">{{ label }}</a></li>
+        {% endfor %}
+    {% else %}
+        <li><em class="text-muted">Not applicable</em></li>
+    {% endif %}
+</ul>

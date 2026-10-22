@@ -1,0 +1,29 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+    <div class="container container-narrow alph-list">
+        <div class="col-12">
+            <header class="clearfix">
+                <h2>
+                    {#<span class="text-muted">{{ count }}</span> occupations#}
+                    {{ occupation }}
+                </h2>
+            </header>
+            <div>
+                <ul class="list-unstyled">
+                    {% for person in persons %}
+                    <li>
+                        <a href="{{ path('detail', {id: person.person.id}) }}">{{ person.person.displayName }}</a>
+                        <ul>
+                        {% for aspect in person.aspects %}
+                            <li>{{ aspect.id }}</li>
+                        {% endfor %}
+                        </ul>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,90 @@
+name: jsn-modern
+
+services:
+    web:
+        build:
+            context: .
+            target: web
+        restart: unless-stopped
+        depends_on:
+            app:
+                condition: service_healthy
+        ports:
+            - "${HTTP_BIND:-127.0.0.1}:${HTTP_PORT:-8080}:80"
+        read_only: true
+        tmpfs:
+            - /var/cache/nginx
+            - /var/run
+        security_opt:
+            - no-new-privileges:true
+
+    app:
+        build:
+            context: .
+            target: production
+        restart: unless-stopped
+        depends_on:
+            db:
+                condition: service_healthy
+        environment:
+            APP_ENV: prod
+            APP_DEBUG: 0
+            APP_SECRET: ${APP_SECRET:?Set APP_SECRET}
+            DATABASE_URL: mysql://${DB_USER:-jsn}:${DB_PASSWORD:?Set DB_PASSWORD}@db:3306/${DB_NAME:-symfony}?serverVersion=11.8.9-MariaDB&charset=utf8mb4
+            GOOGLE_MAPS_BROWSER_KEY: ${GOOGLE_MAPS_BROWSER_KEY:-}
+            GOOGLE_MAPS_SERVER_KEY: ${GOOGLE_MAPS_SERVER_KEY:-}
+            SITE_BASE_URL: ${SITE_BASE_URL:-https://jsn.soohwalee.com}
+        read_only: true
+        tmpfs:
+            - /tmp
+            - /app/var:uid=82,gid=82,mode=0770
+        security_opt:
+            - no-new-privileges:true
+
+    test:
+        profiles: ["test"]
+        build:
+            context: .
+            target: test
+        depends_on:
+            db:
+                condition: service_healthy
+        environment:
+            APP_ENV: test
+            APP_DEBUG: 0
+            APP_SECRET: ${APP_SECRET:?Set APP_SECRET}
+            DATABASE_URL: mysql://${DB_USER:-jsn}:${DB_PASSWORD:?Set DB_PASSWORD}@db:3306/${DB_NAME:-symfony}?serverVersion=11.8.9-MariaDB&charset=utf8mb4
+            GOOGLE_MAPS_SERVER_KEY: ${GOOGLE_MAPS_SERVER_KEY:-}
+            SITE_BASE_URL: ${SITE_BASE_URL:-https://jsn.soohwalee.com}
+        read_only: true
+        tmpfs:
+            - /tmp
+            - /app/var:uid=82,gid=82,mode=0770
+        security_opt:
+            - no-new-privileges:true
+
+    db:
+        image: mariadb:11.8.9
+        restart: unless-stopped
+        environment:
+            MARIADB_DATABASE: ${DB_NAME:-symfony}
+            MARIADB_USER: ${DB_USER:-jsn}
+            MARIADB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+            MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Set DB_ROOT_PASSWORD}
+            MARIADB_AUTO_UPGRADE: 1
+        command:
+            - --character-set-server=utf8mb4
+            - --collation-server=utf8mb4_unicode_ci
+        volumes:
+            - db_data:/var/lib/mysql
+        healthcheck:
+            test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+            start_period: 30s
+        security_opt:
+            - no-new-privileges:true
+
+volumes:
+    db_data:

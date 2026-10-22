@@ -1,0 +1,7 @@
+{% import "macros.html.twig" as macro %}
+
+{% set color = macro.color(source) %}
+<div class="source {{ color }} border">
+    <span class="ident {{ color }} border fg">{{ source.id }}</span>
+    {% include "include/sourcetext.html.twig" with {source:source} only %}
+</div>

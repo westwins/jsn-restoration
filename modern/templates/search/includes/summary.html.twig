@@ -1,0 +1,105 @@
+{% import "macros.html.twig" as macro %}
+
+{% set temp %}
+    {# DATE #}
+    {% if (query.from and query.from|default(1490) != 1490) or (query.to and query.to|default(1870) != 1870) %}
+        Date range: <em>{{ query.from|default(1490) }} – {{ query.to|default(1870) }}</em>
+        <span class="separator"></span>
+    {% endif %}
+
+
+    {# TYPES #}
+    {% set types = ['biographical', 'education', 'career', 'miscellaneous'] %}
+    {% set activeTypes = [] %}
+    {% for type in types %}
+        {% if attribute(query, type) %}{% set activeTypes = activeTypes|merge([type|capitalize]) %}{% endif %}
+    {% endfor %}
+    {% if activeTypes|length < 4 %}
+        Type: <em>Only {{ activeTypes|join(', ') }}</em>
+        <span class="separator"></span>
+    {% endif %}
+
+
+    {# EXCLUSIONS #}
+    {% if query.jesuit is same as(true) %}
+        <em>Only Jesuits</em>
+        <span class="separator"></span>
+    {% endif %}
+    {% if query.jesuit is same as(false) %}
+        <em>Only Non-Jesuits</em>
+        <span class="separator"></span>
+    {% endif %}
+    {% if query.ems is same as(true) %}
+        <em>Only EMS-related persons</em>
+        <span class="separator"></span>
+    {% endif %}
+    {% if query.ems is same as(false) %}
+        <em>Only persons not related to EMS</em>
+        <span class="separator"></span>
+    {% endif %}
+
+
+    {# SUBJECT #}
+    {% if query.subjects and query.subjects|length %}
+        Subjects: <em>
+        {% for subject in query.subjects %}
+            {{ subject }}{% if not loop.last %}, {% endif %}
+        {% endfor %}
+    </em>
+        <span class="separator"></span>
+    {% endif %}
+
+
+    {# OCCUPATION #}
+    {% if query.occupation %}
+        Occupation: <em>{{ filter.occupations|first }}</em>
+        <span class="separator"></span>
+    {% endif %}
+
+
+    {# CONTINENT #}
+    {% if query.continent %}
+        Continent: <em>{{ query.continent|format_continent }}</em>
+        <span class="separator"></span>
+    {% endif %}
+
+
+    {# COUNTRY #}
+    {% if query.country %}
+        Country: <em>{{ query.country|format_country }}</em>
+        <span class="separator"></span>
+    {% endif %}
+
+
+    {# PLACE #}
+    {% if query.radius %}
+        Radius: <em>within {{ query.radius.radius }}&nbsp;km of {{ query.radius.center.description }}</em>
+        <span class="separator"></span>
+    {% endif %}
+    {% if query.bounds %}
+        Within specified coordinates: <em>{{ query.bounds.southWest.latitude }}, {{ query.bounds.southWest.longitude }} to {{ query.bounds.northEast.latitude }}, {{ query.bounds.northEast.longitude }}</em>
+        <span class="separator"></span>
+    {% endif %}
+    {% if query.place %}
+        Place: <em>{{ query.place.placeName }}, {{ query.place.country|format_country }}</em>
+        <span class="separator"></span>
+    {% endif %}
+
+    {# SOURCE #}
+    {% if query.sources %}
+        only from
+        {% if query.sources|length == 1 %}
+                <abbr class="js-popover-html" data-bs-trigger="hover" data-bs-placement="bottom" data-bs-content="{% apply escape('html_attr') %}<small>{% include "include/shortsource.html.twig" with {source: query.sources[0]} only %}</small>{% endapply %}">selected source</abbr>
+        {% else %}
+        <abbr class="js-popover-html" data-bs-trigger="hover" data-bs-placement="bottom" data-bs-content="{% apply escape('html_attr') %}<small><ul class='list-unstyled'>{% for source in query.sources %}<li>{% include "include/shortsource.html.twig" with {source: source} only %}</li>{% endfor %}</ul></small>{% endapply %}">{{ query.sources|length }} selected sources</abbr>
+        {% endif %}
+        <span class="separator"></span>
+    {% endif %}
+{% endset %}
+
+{% if temp|trim|length > 0 %}
+<div class="search-summary">
+    <h6>Your search criteria</h6><br>
+    {{ temp|raw }}
+</div>
+{% endif %}
