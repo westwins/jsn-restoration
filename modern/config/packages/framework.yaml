@@ -1,6 +1,9 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
     secret: '%env(APP_SECRET)%'
+    assets:
+        version: '20261022-1'
+        version_format: '%%s?v=%%s'
 
     # Note that the session will be started ONLY if you read or write from it.
     session: true

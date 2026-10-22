@@ -102,22 +102,16 @@ HAVING
 ORDER BY
     distance ASC
 EOSQL;
-        $rows = $this->em->getConnection()->executeQuery(
+        $ids = $this->em->getConnection()->executeQuery(
             $distanceSql,
             [
                 'lat' => $radius->getCenter()->getLatitude(),
                 'lng' => $radius->getCenter()->getLongitude(),
                 'radius' => $radius->getRadius()
             ]
-        );
+        )->fetchFirstColumn();
 
-        $ids = [];
-
-        foreach ($rows as $row) {
-            $ids[] = $row['id'];
-        }
-
-        return $ids;
+        return array_map('intval', $ids);
     }
 
     public function getSubjectGroupTree($whitelist = null)
@@ -308,17 +302,11 @@ EOSQL;
             ->em
             ->getRepository('App\Entity\Person')
             ->createQueryBuilder('p')
-            ->select('p.id')
+            ->select('DISTINCT p.id')
+            ->innerJoin('p.subjects', 'si')
+            ->where('si.id IN (:ids)')
+            ->setParameter('ids', array_map('intval', $ids))
         ;
-
-        foreach ($ids as $id) {
-            $pqb->innerJoin(
-                'p.subjects',
-                'si'.$id,
-                Query\Expr\Join::WITH,
-                "si$id.id=$id"
-            );
-        }
 
         $pids = $pqb->getQuery()->getResult(Query::HYDRATE_ARRAY);
         $pids = array_map(function ($e) {
