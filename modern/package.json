@@ -1,0 +1,21 @@
+{
+  "name": "jsn-restoration-frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "7.3.1",
+    "@googlemaps/markerclusterer": "2.6.2",
+    "bootstrap": "5.3.8",
+    "jquery": "4.0.0",
+    "nouislider": "15.8.1",
+    "vis-network": "10.1.2"
+  },
+  "devDependencies": {
+    "less": "4.5.1",
+    "vite": "8.3.5"
+  }
+}

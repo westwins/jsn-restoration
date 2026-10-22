@@ -1,0 +1,78 @@
+{% import "macros.html.twig" as macro %}
+
+<div class="pull-right">
+    <div class="pull-left" style="margin-right:7px;">Sort by</div>
+    <div class="dropdown pull-left">
+        <button class="btn btn-default btn-xs dropdown-toggle" type="button" id="dd-sort" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            {% if pagination.isSorted('date') %}Date{% elseif pagination.isSorted('name') %}Name{% endif %}
+            {% if pagination.direction == 'asc' %}ascending{% else %}descending{% endif %}
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dd-sort">
+            <li>{{ knp_pagination_sortable(pagination, 'Name ascending', 'name', {'direction': 'asc'}) }}</li>
+            <li>{{ knp_pagination_sortable(pagination, 'Name descending', 'name', {'direction': 'desc'}) }}</li>
+            <li>{{ knp_pagination_sortable(pagination, 'Date ascending', 'date', {'direction': 'asc'}) }}</li>
+            <li>{{ knp_pagination_sortable(pagination, 'Date descending', 'date', {'direction': 'desc'}) }}</li>
+        </ul>
+    </div>
+</div>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th style="white-space: nowrap">
+            Date
+            {% if pagination.isSorted('date') %}
+            <i class="fa fa-sort-numeric-{{ pagination.direction }} text-primary"></i>
+            {% endif %}
+        </th>
+        <th style="white-space: nowrap">
+            Person
+            {% if pagination.isSorted('name') %}
+            <i class="fa fa-sort-alpha-{{ pagination.direction }} text-primary"></i>
+            {% endif %}
+        </th>
+        <th>Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for aspect in pagination %}
+        {% set aspect = aspect[0] %}
+        <tr>
+            <td style="white-space: nowrap;">
+                {% if aspect.dateExact %}
+                    {{ aspect.dateExact }}
+                {% elseif aspect.dateFrom or aspect.dateTo %}
+                    {{ aspect.dateFrom }} – {{ aspect.dateTo }}
+                {% endif %}
+            </td>
+            <td style="white-space: nowrap;">
+                <a href="{{ path('detail', {id:aspect.person.id}) }}">{{ aspect.person.listName }}</a>
+            </td>
+            <td>
+                {% if "entryInTheOrder" == aspect.type %}
+                    Entered the Society of Jesus {{ macro.places(aspect, false) }}
+                {% elseif "beginningOfLife" == aspect.type %}
+                    Born {{ macro.places(aspect, false) }}
+                {% elseif "endOfLife" == aspect.type %}
+                    Died {{ macro.places(aspect, false) }}
+                {% elseif "resignationFromTheOrder" == aspect.type %}
+                    Left the Society {{ macro.places(aspect, false) }}
+                {% elseif "expulsionFromTheOrder" == aspect.type %}
+                    Was expelled from the Society {{ macro.places(aspect, false) }}
+                {% elseif "education" == aspect.type %}
+                    Studied {{ macro.subjects(aspect, true, false) }}{{ macro.places(aspect, false) }}
+                    {{ macro.comment(aspect) }}
+                {% elseif "career" == aspect.type %}
+                    {% if not aspect.occupation %}
+                        Occupied himself with {{ macro.subjects(aspect, true, false) }}{{ macro.places(aspect, false) }}
+                    {% else %}
+                        {{ aspect.occupation }}{% if aspect.subjects|length %} of {{ macro.subjects(aspect, true, false) }}{% endif %}{{ macro.places(aspect, false) }}
+                    {% endif %}
+                {% else %}
+                    {{ aspect.description|replace_links(currentPo is defined ? [currentPo] : [], false)|smart_quotes }}
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

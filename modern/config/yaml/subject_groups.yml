@@ -1,0 +1,224 @@
+agriculture_and_economics:
+    name: Agriculture and economics
+    subjects:
+        - Agriculture
+        - Agronomy
+        - Forestry
+        - Horticulture
+        - Livestock farming
+        - Trading
+        - Viticulture
+astronomy:
+    name: Astronomy
+    subjects:
+        - Astronomical facilities
+        - Astronomical instruments
+        - Astronomical observations
+        - Astronomical observatories
+        - Astronomical observatory
+        - Astronomical projects
+        - Astronomy
+        - Calendar
+        - Calendars
+        - Chronology
+        - Chronometry
+        - Horology
+        - Proper instrument use
+        - Sun dials
+        - Watchmaking
+early_modern_sciences:
+    name: Early modern sciences
+    subjects:
+        - Exact sciences
+        - Natural and exact sciences
+        - Natural sciences
+        - Sciences
+history:
+    name: History
+    subjects:
+        - Archaeology
+        - Church history
+        - Egyptology
+        - Hieroglyphs
+        - History
+languages:
+    name: Languages
+    subjects:
+        - Arabic
+        - Catalan
+        - Chinese writing system
+        - Classical languages
+        - Classical literature
+        - Classics
+        - Czech
+        - English
+        - French
+        - German
+        - Grammar
+        - Greek
+        - Hebrew
+        - Italian
+        - Languages
+        - Latin
+        - Latin poetry
+        - Linguistics
+        - Literature
+        - Oriental languages
+        - Poetics
+        - Poetry
+        - Portuguese
+        - Rhetoric
+        - Russian
+        - Sinology
+        - Spanish
+        - Syntax
+        - Turkish
+literae_humaniores:
+    name: Literae humaniores
+    subjects:
+        - Literae humaniores
+medicine:
+    name: Medicine
+    subjects:
+        - Biology
+        - Medical botany
+        - Medicine
+        - Pharmaceutics
+        - Pharmacy
+        - Surgery
+mixed_mathematics:
+    name: Mixed mathematics
+    subjects:
+        - Acoustics
+        - Aerostatics
+        - Applied mathematics
+        - Aquaeducts
+        - Architectural engineering
+        - Architecture
+        - Astrology
+        - Aviation
+        - Ballistics
+        - Cartography
+        - Civil architecture
+        - Combustion
+        - Cryptology
+        - Elasticity
+        - Electricity
+        - Engineering
+        - Experimental mechanics
+        - Experimental physics
+        - Experiments
+        - Fortifications
+        - General physics
+        - Hydraulic engineering
+        - Hydraulics
+        - Hydrography
+        - Hydrostatics
+        - Land surveying
+        - Mathematical cabinet
+        - Mathematics
+        - Mechanics
+        - Military architecture
+        - Military art
+        - Mixed mathematics
+        - Music
+        - Naval construction
+        - Naval maps
+        - Navigation
+        - Numismatics
+        - Optics
+        - Particular physics
+        - Perspective
+        - Physical cabinet
+        - Physics
+        - Practical mechanics
+        - Probabilism
+        - Pyrostatics
+        - Scientific instruments
+        - Statics
+        - Statistics
+        - Tactics
+        - Technology
+        - Theoretical physics
+        - Thermal conductivity
+        - Vehicular dynamics
+        - World map
+natural_history:
+    name: Natural history
+    subjects:
+        - Biology
+        - Botany
+        - Cosmography
+        - Entomology
+        - Ethnology
+        - Fieldwork
+        - Geography
+        - Geology
+        - Magnetism
+        - Meteorological observations
+        - Meteorology
+        - Mineralogy
+        - Mining
+        - Natural history
+        - Naturalistic excursions
+        - Topography
+        - Zoology
+natural_philosophy:
+    name: Natural philosophy
+    subjects:
+        - Chemistry
+        - Cosmology
+        - Metaphysics
+        - Natural philosophy
+other:
+    name: Other
+    subjects:
+        - Canon law
+        - Diplomacy
+        - Drawing
+        - Epigraphy
+        - Heraldry
+        - Law
+        - Painting
+philosophy:
+    name: Philosophy
+    subjects:
+        - Aristotelian logic
+        - Casuistry
+        - Eclectic philosophy
+        - Ethics
+        - Logic
+        - Moral philosophy
+        - Philosophy
+pure_mathematics:
+    name: Pure mathematics
+    subjects:
+        - Algebra
+        - Arithmetic
+        - Calculus
+        - Combinatorics
+        - Differential and integral calculus
+        - Euclidean geometry
+        - Geometry
+        - Higher mathematics
+        - Logarithms
+        - Mathematics
+        - Pure mathematics
+        - Squaring of the circle
+theology:
+    name: Theology
+    subjects:
+        - Cases of conscience
+        - Catechesis
+        - Controversial theology
+        - Dialectic theology
+        - Dogmatic theology
+        - Exegesis
+        - Liturgy
+        - Moral theology
+        - Patristics
+        - Polemic theology
+        - Positive theology
+        - Scholastic theology
+        - Scripture
+        - Theology

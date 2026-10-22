@@ -1,0 +1,4 @@
+knp_paginator:
+    page_range: 7
+    template:
+        pagination: 'pagination.html.twig'

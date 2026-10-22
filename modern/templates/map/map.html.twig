@@ -1,0 +1,334 @@
+{% extends "layout.html.twig" %}
+
+{% set renderFooter = false %}
+
+{% block content %}
+<div id="map"></div>
+    <div id="detail" style="display:none;"></div>
+    <div id="map-filters">
+        <div class="f1">
+            <table class="time-slider">
+                <tr>
+                    <td class="input text-right">
+                        <input type="text" name="from" id="when-from" value="1490" class="form-control"/>
+                    </td>
+                    <td>
+                        <div
+                                class="when-slider"
+                                data-slider-min="1490"
+                                data-slider-max="1870"
+                                data-slider-step="1"
+                                data-slider-value="[1490,1870]"
+                        ></div>
+                    </td>
+                    <td class="input">
+                        <input type="text" name="to" id="when-to" value="1870" class="form-control"/>
+                    </td>
+                </tr>
+            </table>
+            <div class="u">
+                <input type="checkbox" class="fancy-checkbox" checked="checked" id="js-undated"/><label for="js-undated" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Show undated aspects">U</label>
+            </div>
+        </div>
+        <div class="f2">
+            {#<button class="btn" id="js-toggle-heatmap">Toggle Heatmap</button>#}
+            <input type="checkbox" class="fancy-checkbox" value="1" name="type" checked="checked" id="js-type-bio"/><label for="js-type-bio" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Biographical">B</label>
+            <input type="checkbox" class="fancy-checkbox" value="2" name="type" checked="checked" id="js-type-edu"/><label for="js-type-edu" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Education">E</label>
+            <input type="checkbox" class="fancy-checkbox" value="4" name="type" checked="checked" id="js-type-crr"/><label for="js-type-crr" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Career">C</label>
+            <input type="checkbox" class="fancy-checkbox" value="8" name="type" checked="checked" id="js-type-misc"/><label class="last" for="js-type-misc" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Miscellaneous">M</label>
+        </div>
+        <div class="f3">
+            <button type="button" id="js-map-boundary" data-href="{{ path('search') }}" class="btn btn-xs btn-default" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Use&nbsp;visible&nbsp;map&nbsp;section as&nbsp;boundary&nbsp;for&nbsp;search"><i class="fa fa-search"></i></button>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    <style type="text/css">
+        body, html {
+            height: 100%;;
+        }
+        #map {
+            height: auto;
+            position: absolute;
+            top: 50px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+
+        }
+        #map.pane-open {
+            right: 370px;
+        }
+        #detail {
+            position: absolute;
+            top: 110px;
+            right: 0;
+            width: 370px;
+            bottom: 0;
+            background: #fff;
+            border-left: 1px solid #d8d8d8;
+        }
+        #detail .title {
+            position: fixed;
+            padding: 10px;
+            height: 60px;
+            width: 370px;
+            margin-top: -60px;
+            margin-left: -1px;
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #d8d8d8;
+            border-left: 1px solid #d8d8d8;
+        }
+        #detail .title h3 {
+            margin: 0;
+            margin-top: 3px;
+        }
+        #detail .title h5 {
+            margin: 0;
+            margin-top: 3px;
+        }
+
+        #detail .list {
+            padding: 10px;
+            padding-top: 5px;
+            max-height: 100%;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        #detail .loading {
+            padding-top: 100px;
+            text-align: center;
+            line-height: 100%;
+        }
+        #map-filters {
+            position: absolute;
+            top: 65px;
+            left: 15px;
+            height: 35px;
+        }
+        #map-filters div.f2, #map-filters div.u {
+            padding: 8px;
+        }
+        #map-filters div.u {
+            float: left;
+        }
+        #map-filters div.f3 {
+            position: relative;
+            width: 35px;
+        }
+        #map-filters div.f3 button {
+            margin: 0;
+            width: 35px;
+            height: 35px;
+            outline: 0;
+        }
+        #map-filters > div {
+            float: left;
+            margin-right: 10px;
+            font-size: 75%;
+            height: 35px;
+            /*border: 1px solid #d8d8d8;*/
+            background: #fff;
+            box-shadow: rgba(0, 0, 0, 0.3) 1px 1px 1px;
+        }
+        #map-filters .f2 label.last {
+            margin-right: 0;
+        }
+
+        #map-filters .time-slider {
+            float: left;width: 450px;
+        }
+        #map-filters .time-slider td {
+            padding: 0 10px;;
+        }
+        #map-filters .time-slider td.input {
+            width: 50px;
+            padding: 0;
+        }
+
+        #map-filters .time-slider td.input input {
+            width: 50px;padding: 0; margin:0;border: 0 none; box-shadow: none;
+        }
+
+        #map-filters label.control-label {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: normal;
+        }
+        .close-pane {
+            background-color: transparent;
+            border: 0 none;
+            outline: 0;
+        }
+    </style>
+{% endblock %}
+
+{% set enableMap = true %}
+
+{% block javascripts %}
+    <script type="module">
+        var map, currentMarker, heatmap, heatmapData, mc, markers = [], $detail = $('#detail');
+
+        $('body').one('map:ready', function() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: {lat: 49.8772213189114, lng: 16.243990987499956},
+                zoom: 5,
+                minZoom: 3,
+                maxZoom: 10,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: false
+            });
+
+            map.addListener('center_changed', debounce(updateUrl, 250));
+            map.addListener('zoom_changed', debounce(updateUrl, 250));
+
+            // The legacy heatmap is disabled; retain its interface for marker updates.
+            heatmap = {
+                setMap: function(){},
+                getMap: function(){ return null; },
+                setData: function(){}
+            };
+
+            mc = new MarkerClusterer(map, [], {
+                maxZoom: 7,
+                imagePath: '{{ asset('images/m') }}'
+            });
+
+            refreshMarkers();
+        }).on('click', '.close-pane', function() {
+            $('#map').removeClass('pane-open');
+            google.maps.event.trigger(map, 'resize');
+            $detail.animate({
+                opacity: 'hide',
+                width: 0
+            }, 150);
+            currentMarker.setLabel(null);
+            currentMarker = null;
+        });
+
+        $('#js-toggle-heatmap').click(function() {
+            heatmap.setMap(heatmap.getMap() ? null : map);
+        });
+
+        $('#js-map-boundary').click(function() {
+            var params = collectParams();
+            params.bounds = map.getBounds().toUrlValue();
+            window.location.href = $(this).data('href') + '?' + $.param(params);
+        });
+
+        function clearMarkers() {
+            mc.clearMarkers();
+//            $.each(markers, function() {
+//                this.setMap(null);
+//            });
+            markers = [];
+            heatmapData = [];
+        }
+        function debounce(func, wait, immediate) {
+            var timeout;
+            return function() {
+                var context = this, args = arguments;
+                var later = function() {
+                    timeout = null;
+                    if (!immediate) func.apply(context, args);
+                };
+                var callNow = immediate && !timeout;
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+                if (callNow) func.apply(context, args);
+            };
+        };
+
+        function showDetail(placeName, url, pos, marker) {
+            if (currentMarker) {
+                currentMarker.setLabel(null);
+            }
+            currentMarker = marker;
+            currentMarker.setLabel('X');
+
+            $('#map').addClass('pane-open');
+            $detail
+                .css({width: '370px'})
+                .data('current-url', url)
+                .show()
+            ;
+            loadDetail(url);
+            google.maps.event.trigger(map, 'resize');
+            map.panTo(pos);
+        }
+
+        function loadDetail(url) {
+            url = url + '?' + $.param(collectParams());
+            $detail.html('<div class="loading"><div class="spinner"> <div class="bounce1"></div> <div class="bounce2"></div> <div class="bounce3"></div></div><h6>Loading...</h6></div>')
+                    .load(url);
+        }
+
+        function collectParams(extraMapInfo) {
+            extraMapInfo = extraMapInfo || false;
+
+            var types = 0;
+            $('input[name="type"]').each(function() {
+                var $this = $(this);
+                if (!$this.prop('checked')) {
+                    return;
+                }
+                types = types | parseInt($(this).val(), 10);
+            });
+
+            var params = {
+                from: $('#when-from').val(),
+                to: $('#when-to').val(),
+                includeUndated: $('#js-undated').prop('checked')?1:0,
+                types: types
+            };
+
+            if (extraMapInfo) {
+                params.center = map.getCenter().toUrlValue();
+                params.zoom = map.getZoom();
+            }
+
+            return params;
+        }
+
+        function updateUrl()
+        {
+            window.location.hash = $.param(collectParams(true));
+        }
+
+        function refreshMarkers() {
+            $.getJSON('{{ path('map_markers') }}', collectParams(), function(loadedMarkers) {
+                clearMarkers();
+
+                $.each(loadedMarkers, function() {
+                    var pos = new google.maps.LatLng(this.lat, this.lng);
+                    var marker = new google.maps.Marker({
+                        position: pos
+                    });
+
+                    var url = this.url;
+                    var title = this.title;
+                    marker.addListener('click', function() {
+                        showDetail(title, url, pos, marker);
+                    });
+
+                    markers.push(marker);
+                    heatmapData.push({location: pos, weight: this.weight});
+                });
+
+                mc.addMarkers(markers);
+
+                heatmap.setData(heatmapData);
+            });
+            if ($detail.is(':visible')) {
+                loadDetail($detail.data('current-url'));
+            }
+        }
+
+        $('#map-filters input').change(debounce(refreshMarkers, 750));
+
+    </script>
+{% endblock %}

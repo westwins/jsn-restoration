@@ -1,0 +1,355 @@
+{% extends 'layout.html.twig' %}
+
+{% set title = (person.displayName ~ (person.dateOfBirth or person.dateOfDeath ? " (" ~ person.dateOfBirth ~ "–" ~ person.dateOfDeath ~ ")" : "")) %}
+
+{% block content %}
+    <style type="text/css">
+        .gm-style-iw .citation, .gm-style-iw .geo {
+            display: none;
+        }
+        .gm-style-iw {
+            z-index: 9999;
+        }
+        #map-tooltip {
+            z-index: 99;
+        }
+    </style>
+    <div class="container detail">
+        <div class="col-sm-8">
+
+            <header>
+                <h1>{{ person.displayName }} {% if person.dateOfBirth or person.dateOfDeath %}<small class="text-muted">({{ person.dateOfBirth }}–{{ person.dateOfDeath }})</small>{% endif %}</h1>
+                <p class="small text-muted pref">
+                    {% if not person.isJesuit %}<span class="non-jesuit">Non-Jesuit</span> &bull; {% endif %}
+                    {% if person.viafId %}VIAF: <a target="_blank" href="http://viaf.org/viaf/{{ person.viafId }}"><code>{{ person.viafId }}</code></a> &bull; {% endif %}
+
+                    <a target="_blank" href="{{ path('data', {format: 'xml', id: person.id}) }}" title="View as XML"><code>XML</code></a>
+                    <a target="_blank" href="{{ path('data', {format: 'json', id: person.id}) }}" title="View as JSON"><code>JSON</code></a>
+                    <a target="_blank" href="https://pdrprod.bbaw.de/idi/pdrnc/{{ person.pdrId }}" title="Download raw, unprocessed data as XML"><code>RAW</code></a>
+                </p>
+
+
+            </header>
+
+            {% for section, subSections in aspects %}
+            <h4>{{ section }}</h4>
+            <ul class="aspect-list timeline">
+            {% for aspectList in subSections %}
+                {% for aspect in aspectList %}
+                    <li class="aspect timeline-entry" data-symbol="{{ section[:1]|capitalize }}">
+                        {% include "include/aspect.html.twig" with {aspect: aspect} only %}
+                    </li>
+                {% endfor %}
+            {% endfor %}
+            </ul>
+            {% endfor %}
+
+            {% if relationsOutgoing|length %}
+                <h4>Relations</h4>
+                <ul class="aspect-list timeline">
+                    {% for aspect in relationsOutgoing %}
+                        <li class="aspect timeline-entry" data-symbol="I">
+                            {% include "include/aspect.html.twig" with {aspect: aspect, currentPo: person.id} only %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if person.relationsIncoming|length %}
+                <h4>Relations from others</h4>
+                <ul class="aspect-list timeline">
+                    {% for relation in person.relationsIncoming %}
+                        <li class="aspect timeline-entry" data-symbol="O">
+                            {% include "include/aspect.html.twig" with {aspect: relation.aspect, currentPo: person.id} only %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+        </div>
+        <div class="col-sm-4 col-right">
+            {% if person.alternateNames|length %}
+            <h4>Alternate names</h4>
+            <div class="panel panel-default alternate-names">
+                <div class="panel-body">
+                <ul class="list-unstyled">
+                    {% for name in person.alternateNames|slice(0,5) %}
+                    <li>{{ name.displayName }}</li>
+                    {% endfor %}
+                </ul>
+                {% if person.alternateNames|length > 5 %}
+                <ul class="list-unstyled collapse" id="alternateNamesCollapse">
+                    {% for name in person.alternateNames|slice(5) %}
+                    <li>{{ name.displayName }}</li>
+                    {% endfor %}
+                </ul>
+                <div class="text-center" style="border-top: 1px solid #eee">
+                    {% set hiddenItems = (person.alternateNames|length) - 5 %}
+                    <button
+                            type="button" class="btn btn-link" id="alternateNamesToggle"
+                            data-bs-toggle="collapse" data-bs-target="#alternateNamesCollapse"
+                            data-collapsed-title="Show {{ hiddenItems }} more names"
+                            data-expanded-title="Collapse list"
+                            style="outline: 0;"
+                    >Show {{ hiddenItems }} more names</button>
+                </div>
+                {% endif %}
+                </div>
+            </div>
+                {% if person.viafId %}
+                <p class="viaf-notice">
+                    May include data from <a target="_blank" href="http://viaf.org/viaf/{{ person.viafId }}">viaf.org</a>
+                </p>
+                {% endif %}
+            {% endif %}
+
+            {% if person.subjects|length %}
+            <h4>Related subjects</h4>
+            <div class="panel panel-default">
+                <div class="list-group">
+                    {% for subject in person.subjects %}
+                    <a class="list-group-item" href="{{ path('search', {subjects:subject.id}) }}">{{ subject.title }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if relations|length %}
+            <h4>Relations</h4>
+            <div class="panel panel-default">
+                <ul class="list-group">
+                    {% for relation in relations %}
+                    <a class="list-group-item" href="{{ path('detail', {id:relation.id}) }}">{{ relation.name }}</a>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% if edges|length %}
+            <h4>Relation Graph</h4>
+            <div id="relation-graph" style="border:1px solid #ccc; border-bottom-width: 0; width: 100%; height: 200px;"></div>
+                <a class="btn btn-default btn-block btn-sm" id="graph-enlarge" target="_blank" href="{{ path('graph', {id: person.id}) }}">enlarge <i class="fa fa-expand"></i></a>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    {% if places|length > 0 %}
+    <div class="map-wrap" style="position: relative;">
+
+        <div class="fade" style="height: 30px; line-height: 30px; position: absolute; top: 0; left: 0; color: #fff; text-align: center; background-color: rgba(0,0,0,0.5); width:100%;" id="map-tooltip"></div>
+        <div id="map" style="height:350px;"></div>
+
+    </div>
+    {% endif %}
+
+    <div class="container detail"><div class="col-12">
+        <h4>Sources</h4>
+        <ol class="source-list">
+            {% for source in person.sources %}
+            <li id="source-{{ source.id }}">
+                {% include "include/source.html.twig" with {source: source} only %}
+            </li>
+            {% endfor %}
+        </ol>
+
+        <h4 style="margin-top: 60px;">Recommended Citation</h4>
+        <div class="well well-sm">
+            {% set stats = stats() %}
+            {{ person.displayName }} {% if person.dateOfBirth or person.dateOfDeath %}({{ person.dateOfBirth }}–{{ person.dateOfDeath }}){% endif %}. In: Jesuit Science Network, version {{ stats.lm|date('m/d/Y') }}. URL: <samp>{{ url('detail', {id: person.id}) }}</samp>.
+        </div>
+    </div></div>
+
+{% endblock %}
+
+{% if places|length > 0 %}
+    {% set enableMap = true %}
+{% endif %}
+
+{% block javascripts %}
+    <script type="module">
+        {% if places|length > 0 %}
+        {% set enableMap = true %}
+        var map, markerObjects = [];
+        var initializeMapView = function() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: {lat: -34.397, lng: 150.644},
+                zoom: 10,
+                minZoom: 3,
+                mapTypeControl: false,
+                streetViewControl: false,
+                maxZoom: 10,
+                scrollwheel: false
+            });
+
+            var bounds = new google.maps.LatLngBounds();
+            $('.geo').on('click', function(e) {
+                e.preventDefault();
+                var $this = $(this),
+                    pos = new google.maps.LatLng(
+                        parseFloat($this.data('lat')),
+                        parseFloat($this.data('lng'))
+                    );
+                map.panTo(pos);
+                $.each(markerObjects, function (i, marker) {
+                    var mlat = marker.position.lat();
+                    var mlng = marker.position.lng();
+
+                    if (mlat == pos.lat() && mlng == pos.lng()) {
+                        new google.maps.event.trigger( marker, 'click' );
+                        return false;
+                    }
+                });
+                window.scrollTo('#map', 50);
+            });
+
+            var info = new google.maps.InfoWindow({
+                content: ''
+            });
+            var $tooltip = $('#map-tooltip');
+
+            var markers = {{ places|json_encode|raw }};
+
+            $.each(markers, function(i, place) {
+                var pos = new google.maps.LatLng(place.lat, place.lng);
+                var marker = new google.maps.Marker({
+                    position: pos,
+                    map: map,
+                    label: place.label,
+                    title: place.name
+                });
+                markerObjects.push(marker);
+
+                marker.addListener('click', function() {
+                    info.setContent("<strong>" + place.name + "</strong><br>" + place.aspects.join("<br>"));
+                    info.open(map, marker);
+                });
+
+                bounds.extend(pos);
+            });
+            map.fitBounds(bounds);
+        };
+        if (mapIsReady) {
+            initializeMapView();
+        } else {
+            $('body').one('map:ready', initializeMapView);
+        }
+        {% endif %}
+
+        $(function() {
+            var $toggle = $('#alternateNamesToggle');
+            $('#alternateNamesCollapse')
+                .on('show.bs.collapse', function() {
+                    console.log('show');
+                    $toggle.text($toggle.data('expanded-title'));
+                })
+                .on('hide.bs.collapse', function() {
+                    console.log('hide');
+                    $toggle.text($toggle.data('collapsed-title'));
+                })
+            ;
+        });
+
+    </script>
+    {% if edges|length %}
+<script type="module" src="{{ asset('js/graph.js') }}"></script>
+<script type="module">
+    $(function() {
+        $('#graph-enlarge').click(function(e) {
+            e.preventDefault();
+            window.open(
+                $(this).attr('href'),
+                'jsn-graph',
+                'width=800,height=600,toolbar=no,location=no,menubar=no'
+            );
+        })
+    });
+
+    var network;
+
+    var nodesDataset = new vis.DataSet({{ nodes|json_encode|raw }});
+    var edgesDataset = new vis.DataSet({{ edges|json_encode|raw }});
+
+    function redrawAll() {
+        var container = document.getElementById('relation-graph');
+        var options = {
+            layout: {
+                improvedLayout: true,
+                randomSeed: 42
+            },
+            nodes: {
+                shape: 'dot',
+                borderWidth: 2,
+                size: 10,
+                font: {
+                    size: 12,
+                    face: 'Tahoma'
+                }
+            },
+            edges: {
+                width: 1.5,
+                smooth: {
+                    type: 'continuous'
+                }
+            },
+            groups: {
+                j: {
+                    color: {
+                        border: '#aa1133',
+                        background: '#aa1133',
+                        highlight: {
+                            border: '#aa1133',
+                            background: '#aa1133'
+                        },
+                        hover: {
+                            border: '#aa1133',
+                            background: '#aa1133'
+                        }
+                    },
+                    font: {
+                        color: "#444"
+                    }
+                },
+                n: {
+                    color: {
+                        border: '#aa1133',
+                        background: '#ffffff',
+                        highlight: {
+                            border: '#aa1133',
+                            background: '#ffffff'
+                        },
+                        hover: {
+                            border: '#aa1133',
+                            background: '#ffffff'
+                        }
+                    },
+                    font: {
+                        color: '#444'
+                    }
+                }
+            },
+            physics: {
+                enabled: false
+            },
+            interaction: {
+                dragNodes: false,
+                dragView: false,
+                zoomView: false,
+                selectable: false,
+                tooltipDelay: 50,
+                hideEdgesOnDrag: true,
+                keyboard: false,
+                hover: false,
+                selectConnectedEdges: false,
+                hoverConnectedEdges: false
+            },
+            manipulation: {
+                enabled: false
+            }
+        };
+        var data = {nodes:nodesDataset, edges:edgesDataset};
+        network = new vis.Network(container, data, options);
+    }
+
+    redrawAll()
+</script>
+{% endif %}
+{% endblock %}

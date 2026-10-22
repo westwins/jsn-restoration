@@ -1,0 +1,18 @@
+<div class="modal fade {{ class|default('') }}" id="{{ id }}" tabindex="-1" aria-labelledby="{{ id }}-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="{{ id }}-label">{{ title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" {% block extra_modal_attributes %}{% endblock %}>
+                {% block body %}{% endblock %}
+            </div>
+            {% if footer|default(false) %}
+            <div class="modal-footer">
+                {% block buttons %}{% endblock %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

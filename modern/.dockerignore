@@ -1,0 +1,8 @@
+.env.local
+.env.*.local
+.git
+.phpunit.cache
+node_modules
+rector.php
+var
+vendor

@@ -1,0 +1,9 @@
+twig:
+    file_name_pattern: '*.twig'
+    globals:
+        site_title: '%site_title%'
+        maps_browser_key: '%env(GOOGLE_MAPS_BROWSER_KEY)%'
+
+when@test:
+    twig:
+        strict_variables: true

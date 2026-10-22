@@ -1,0 +1,33 @@
+<?php
+
+namespace App\ORM\Hydrators;
+
+use App\LetterListInterface;
+use Doctrine\ORM\Internal\Hydration\HydrationException;
+use Doctrine\ORM\Internal\Hydration\ObjectHydrator;
+
+class LetterListHydrator extends ObjectHydrator
+{
+    protected function hydrateAllData(): array
+    {
+        $data = parent::hydrateAllData();
+
+        $letters = [];
+
+        foreach ($data as $item) {
+            if (!($item instanceof LetterListInterface)) {
+                throw new HydrationException('LetterListHydrator can only be used with LetterListInterface objects');
+            }
+
+            $letter = $item->getLetter();
+            if (!array_key_exists($letter, $letters)) {
+                $letters[$letter] = [];
+            }
+            $letters[$letter][] = $item;
+        }
+
+        ksort($letters);
+
+        return $letters;
+    }
+}
