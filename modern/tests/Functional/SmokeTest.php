@@ -37,6 +37,8 @@ final class SmokeTest extends WebTestCase
         yield 'occupations API' => ['/occupations.json'];
         yield 'regions API' => ['/regions.json'];
         yield 'map markers API' => ['/map/markers?from=1490&to=1870'];
+        yield 'map markers API with scalar types' => ['/map/markers?from=1490&to=1870&types=15'];
+        yield 'map markers API with array types' => ['/map/markers?from=1490&to=1870&types[]=1&types[]=2'];
         yield 'person detail' => ['/p/14/'];
         yield 'person graph' => ['/p/14/graph'];
         yield 'person JSON' => ['/p/14.json'];

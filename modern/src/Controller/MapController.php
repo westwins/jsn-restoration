@@ -27,7 +27,13 @@ class MapController extends LegacyController
     private function applyTypeFilter(QueryBuilder $qb, Request $request)
     {
         $qb->andWhere('a.type <> \'biographicalData\''); // @TODO this is a data fix really.
-        $types = $request->query->all('types') ?: \App\Query::types();
+        $query = $request->query->all();
+        $rawTypes = $query['types'] ?? \App\Query::types();
+        $types = is_array($rawTypes)
+            ? array_reduce($rawTypes, static fn (int $mask, mixed $type): int => $mask | (int) $type, 0)
+            : (int) $rawTypes;
+        $types &= \App\Query::types();
+
         $qb->andWhere(SearchService::getTypeWhere('a.type', $types));
     }
 
