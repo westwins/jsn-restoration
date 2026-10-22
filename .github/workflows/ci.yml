@@ -67,7 +67,7 @@ jobs:
 
       - name: Verify container health endpoints
         run: |
-          docker compose up -d app web
+          docker compose up -d --wait --wait-timeout 120 app web
           docker compose exec -T web wget --quiet --spider http://127.0.0.1/healthz
           docker compose exec -T web wget --quiet --spider http://127.0.0.1/readyz
 
